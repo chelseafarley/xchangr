@@ -68,13 +68,12 @@ export default function AddExchangeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center'
   },
   inputText: {
     fontSize: 17,
     lineHeight: 24,
     textAlign: 'center',
-    marginBottom: 24
+    margin: 8
   }
 });

@@ -33,7 +33,8 @@ export default function ExchangeListItem(props: ExchangeListItemProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   left: {
     alignItems: 'flex-start',

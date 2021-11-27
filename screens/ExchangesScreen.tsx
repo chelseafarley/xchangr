@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
-import { Text, View } from '../components/Themed';
+import { Text } from '../components/Themed';
 import { RootTabScreenProps, XchangrAppState } from '../types';
 import ExchangeListItem from '../components/ExchangeListItem';
 import BeaconContext from '../navigation/BeaconContext';
@@ -21,11 +21,16 @@ export default function ExchangesScreen({ navigation }: RootTabScreenProps<'TabO
   }
 
   return (
-    <View style={styles.container}>
-      <BeaconContext.Consumer>
-        {context => renderExchanges(context)}
-      </BeaconContext.Consumer>
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={50}
+      style={styles.container}>
+      <ScrollView style={{flex: 1, alignSelf: "stretch"}}>
+        <BeaconContext.Consumer>
+          {context => renderExchanges(context)}
+        </BeaconContext.Consumer>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -33,7 +38,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    alignSelf: 'stretch'
   },
   bodyText: {
     fontSize: 17,

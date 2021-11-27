@@ -9,23 +9,55 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { ColorSchemeName, Pressable } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
-import TabOneScreen from '../screens/TabOneScreen';
-import TabTwoScreen from '../screens/TabTwoScreen';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import ExchangesScreen from '../screens/ExchangesScreen';
+import AddExchangeScreen from '../screens/AddExchangeScreen';
+import { RootStackParamList, RootTabParamList, RootTabScreenProps, Exchange } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
+import BeaconContext from './BeaconContext'
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+  const [exchanges, setExchanges] = React.useState<Exchange[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const getExchanges = async () => {
+    const jsonValue = await AsyncStorage.getItem('exchanges')
+    const loadedExchanges = jsonValue != null ? JSON.parse(jsonValue) : [];
+    setExchanges(loadedExchanges);
+    setIsLoading(false);
+  }
+
+  const addExchange = async (exchange: Exchange) => {
+    let exchangesToUpdate = exchanges;
+    exchangesToUpdate.push(exchange);
+    await AsyncStorage.setItem('exchanges', JSON.stringify(exchangesToUpdate));
+    setExchanges(exchangesToUpdate);
+    getExchanges();
+  };
+
+  const deleteExchange = async (exchange: Exchange) => {
+    const updatedExchanges = exchanges.filter(element => element.FromCurrency !== exchange.FromCurrency || element.FromCurrencyValue !== exchange.FromCurrencyValue || element.ToCurrency !== exchange.ToCurrency || element.ToCurrencyValue !== exchange.ToCurrencyValue);
+    await AsyncStorage.setItem('exchanges', JSON.stringify(updatedExchanges));
+    setExchanges(updatedExchanges);
+  };
+
+  if (isLoading) {
+    getExchanges();
+  }
+
   return (
-    <NavigationContainer
-      linking={LinkingConfiguration}
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <RootNavigator />
-    </NavigationContainer>
+    <BeaconContext.Provider value={{ Exchanges: exchanges, IsLoading: isLoading, DeleteExchange: deleteExchange, AddExchange: addExchange }}>
+      <NavigationContainer
+        linking={LinkingConfiguration}
+        theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <RootNavigator />
+      </NavigationContainer>
+    </BeaconContext.Provider>
   );
 }
 
@@ -41,7 +73,7 @@ function RootNavigator() {
       <Stack.Screen name="Root" component={BottomTabNavigator} options={{ headerShown: false }} />
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name="Modal" component={ModalScreen} />
+        <Stack.Screen name="Modal" component={ModalScreen} options={{ headerShown: false }} />
       </Stack.Group>
     </Stack.Navigator>
   );
@@ -64,10 +96,10 @@ function BottomTabNavigator() {
       }}>
       <BottomTab.Screen
         name="TabOne"
-        component={TabOneScreen}
+        component={ExchangesScreen}
         options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Exchanges',
+          tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
           headerRight: () => (
             <Pressable
               onPress={() => navigation.navigate('Modal')}
@@ -86,10 +118,10 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="TabTwo"
-        component={TabTwoScreen}
+        component={AddExchangeScreen}
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Add Exchange',
+          tabBarIcon: ({ color }) => <TabBarIcon name="plus-circle" color={color} />,
         }}
       />
     </BottomTab.Navigator>

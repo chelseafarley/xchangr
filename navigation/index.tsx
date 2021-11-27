@@ -33,11 +33,10 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   }
 
   const addExchange = async (exchange: Exchange) => {
-    let exchangesToUpdate = exchanges;
+    let exchangesToUpdate = [...exchanges];
     exchangesToUpdate.push(exchange);
     await AsyncStorage.setItem('exchanges', JSON.stringify(exchangesToUpdate));
     setExchanges(exchangesToUpdate);
-    getExchanges();
   };
 
   const deleteExchange = async (exchange: Exchange) => {
